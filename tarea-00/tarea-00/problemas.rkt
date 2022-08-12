@@ -18,8 +18,12 @@
         (* 2 (+ (first rec) (second rec)))))
 
 ;; 5.
-(define (find-needle ls)
-  ...)
+ (define (find-needle ls)
+   (let loop ((ls ls)
+              (idx 0))
+   (cond ((empty? ls)-1)
+         ((equal? (first ls) 'needle) idx)
+         (else (loop (rest ls) (add1 idx))))))
 
 ;; 6.
 (define (abs x)
@@ -33,11 +37,13 @@
 
 ;; 8.
 (define (even? x)
-  ...)
+  (if (= (modulo x 2) 0) #t #f))
 
 ;; 9.
 (define another-add
   (lambda (n m)
-    ...))
+    (cond
+      ((zero? n) m)
+      (else (add1 (another-add (sub1 n) m))))))
 
 (provide (all-defined-out))
