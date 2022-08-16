@@ -9,4 +9,13 @@
 	null
 	(cons n (countdown (- n 1)))))
 
+;; 2.
+
+(define (insertL x y ls)
+  (if (empty? ls)
+      null
+      (if (eq? (first ls) x)
+          (cons y (cons x (insertL x y (rest ls))))
+          (cons (first ls) (insertL x y (rest ls))))))
+
 (provide (all-defined-out))
