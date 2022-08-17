@@ -26,4 +26,11 @@
     ((eqv? (first ls) x) (rest ls))
     (else (cons (first ls) (remv-1st x (rest ls))))))
 
+;; 4.
+
+(define (map x ls)
+  (if (empty? ls)
+      null
+      (cons (car ls) (map x (rest ls))))
+
 (provide (all-defined-out))
