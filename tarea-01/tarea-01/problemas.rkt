@@ -31,6 +31,10 @@
 (define (map x ls)
   (if (empty? ls)
       null
-      (cons (car ls) (map x (rest ls))))
+      (cons (x (first ls)) (map x (rest ls)))))
+
+;; 5.
+
+(define ())
 
 (provide (all-defined-out))
