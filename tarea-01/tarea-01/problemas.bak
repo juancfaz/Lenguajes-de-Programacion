@@ -35,9 +35,6 @@
 
 ;; 5.
 
-(define (filter x ls)
-  (if (empty? ls)
-      null
-      "no esta vacia"))
+(define ())
 
 (provide (all-defined-out))
