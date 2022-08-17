@@ -21,10 +21,9 @@
 ;; 3.
 
 (define (remv-1st x ls)
-  (if (empty? ls)
-      null
-      (if (eq? x (first ls))
-          (remv-1st x (rest ls)))
-      (cons (first ls) (remv-1st x (rest ls)))))
+  (cond
+    ((empty? ls) null)
+    ((eqv? (first ls) x) (rest ls))
+    (else (cons (first ls) (remv-1st x (rest ls))))))
 
 (provide (all-defined-out))
