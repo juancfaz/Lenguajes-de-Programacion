@@ -49,6 +49,15 @@
       (cons (list (first ls1) (first ls2))
             (zip  (rest ls1) (rest ls2)))))
 
+;; 7.
+
+(define (list-index-ofv x ls)
+  (cond
+    [(empty? ls) null]
+    [(eqv? x (first ls)) 0]
+    [else (+ (list-index-ofv x (rest ls)) 1)]))
+            
+
 ;; 9.
 
 (define (reverse ls)
