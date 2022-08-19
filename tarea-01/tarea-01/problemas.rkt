@@ -75,6 +75,12 @@
       (append (reverse (rest ls))
               (list (first ls)))))
 
+;; 10.
+
+(define (repeat ls x)
+  (cond
+    [(= x 0) ls]))
+
 ;; 18.
 
 (define (powerset ls)
