@@ -56,7 +56,16 @@
     [(empty? ls) null]
     [(eqv? x (first ls)) 0]
     [else (+ (list-index-ofv x (rest ls)) 1)]))
-            
+
+;; 8.
+
+(define (append ls1 ls2)
+  (cond
+    [(and (empty? ls1)(empty? ls2)) null]
+    [(empty? ls1) ls2]
+    [(empty? ls2) ls1]
+    [else (cons (first (first (list ls1 ls2)))
+                (append (rest ls1) ls2))]))
 
 ;; 9.
 
