@@ -43,8 +43,11 @@
 
 ;; 6.
 
-#|(define (zip ls ls)
-  ...)|#
+(define (zip ls1 ls2)
+  (if (or (empty? ls1) (empty? ls2))
+      null
+      (cons (list (first ls1) (first ls2))
+            (zip  (rest ls1) (rest ls2)))))
 
 ;; 9.
 
