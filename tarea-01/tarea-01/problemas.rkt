@@ -78,9 +78,8 @@
 ;; 10.
 
 (define (repeat ls x)
-  (cond
-    [(= x 0) ls]))
-
+  (cond [(= x 0) null]
+        [(>= x 0) (append ls (repeat ls (- x 1)))]))
 ;; 18.
 
 (define (powerset ls)
