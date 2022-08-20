@@ -80,6 +80,26 @@
 (define (repeat ls x)
   (cond [(= x 0) null]
         [(>= x 0) (append ls (repeat ls (- x 1)))]))
+
+;; 11.
+
+;; 12.
+
+;; 13.
+
+(define (binary->natural n)
+  (if (null? n)
+      0 
+      (+ (car n) (* 2 (binary->natural (cdr n))))))
+
+;; 14.
+
+;; 15.
+
+;; 16.
+
+;; 17.
+
 ;; 18.
 
 (define (powerset ls)
@@ -94,5 +114,13 @@
       null
       (cons (cons x (first ls))
             (f x (rest ls)))))
+
+;; 19.
+
+;; 20.
+
+;; 21.
+
+;; 22.
 
 (provide (all-defined-out))
