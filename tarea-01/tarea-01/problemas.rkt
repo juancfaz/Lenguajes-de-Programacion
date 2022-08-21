@@ -97,7 +97,7 @@
 (define (binary->natural n)
   (if (null? n)
       0 
-      (+ (car n) (* 2 (binary->natural (cdr n))))))
+      (+ (first n) (* 2 (binary->natural (rest n))))))
 
 ;; 14.
 
@@ -111,9 +111,27 @@
 
 ;; 15.
 
+(define append-map (lambda (proc ls)
+                     (cond
+                       [(empty? ls) ls]
+                       [else (append (proc(first ls)) (append-map proc(rest ls)))])))
+
+
 ;; 16.
 
+(define (set-difference ls1 ls2)
+  (cond
+    [(empty? ls1) null]
+    [(empty? ls2) ls1]
+    [(eq? (member (first ls1) ls2) #f) (cons (first ls1) (set-difference (rest ls1) ls2))]
+    [else (set-difference (rest ls1) ls2)]))
+
 ;; 17.
+
+(define (foldr op n ls)
+  (cond
+    [(empty? ls) n]
+    [else (op (first ls) (foldr op n (rest ls)))]))
 
 ;; 18.
 
