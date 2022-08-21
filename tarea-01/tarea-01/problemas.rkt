@@ -94,6 +94,14 @@
 
 ;; 14.
 
+(define (div a b)
+  (cond
+    [(< a b) 0]
+    [(= b 0) "Division entre 0"]
+    [(= (modulo a b) 0) (+ (div (- a b) b) 1)]
+    [else "Solo numeros enteros"]))
+  
+
 ;; 15.
 
 ;; 16.
