@@ -83,6 +83,13 @@
 
 ;; 11.
 
+(define (same-lists* ls1 ls2)
+  (cond
+    [(and (empty? ls1) (empty? ls2)) #t]
+    [(or (empty? ls1) (empty? ls2)) #f]
+    [(equal? (first ls1) (first ls2)) (same-lists* (rest ls1) (rest ls2))]
+    [else #f]))
+
 ;; 12.
 
 ;; 13.
