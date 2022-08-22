@@ -43,12 +43,10 @@
 ;; 6.
 
 (define (zip ls1 ls2)
-  )
-  (if (or (empty? ls1) (empty? ls2))
-      null
-      (cons (list (first ls1) (first ls2))
-            (zip  (rest ls1) (rest ls2)))))
-
+  (cond
+    [(or (empty? ls1) (empty? ls2)) null]
+    [else (cons (cons (first ls1) (first ls2))
+                (zip (rest ls1) (rest ls2)))]))
 ;; 7.
 
 (define (list-index-ofv x ls)
@@ -70,16 +68,17 @@
 ;; 9.
 
 (define (reverse ls)
-  (if (empty? ls)
-      null
-      (append (reverse (rest ls))
-              (list (first ls)))))
+  (cond
+    [(empty? ls) null]
+    [else (append (reverse (rest ls))
+              (list (first ls)))]))
 
 ;; 10.
 
 (define (repeat ls x)
-  (cond [(= x 0) null]
-        [(>= x 0) (append ls (repeat ls (- x 1)))]))
+  (cond
+    [(= x 0) null]
+    [(>= x 0) (append ls (repeat ls (- x 1)))]))
 
 ;; 11.
 
@@ -95,18 +94,18 @@
 ;; 13.
 
 (define (binary->natural n)
-  (if (null? n)
-      0 
-      (+ (first n) (* 2 (binary->natural (rest n))))))
+  (cond
+    [(null? n) 0]
+    [else (+ (first n) (* 2 (binary->natural (rest n))))]))
 
 ;; 14.
 
 (define (div a b)
   (cond
     [(< a b) 0]
-    [(= b 0) "Division entre 0"]
+    [(= b 0) -1]
     [(= (modulo a b) 0) (+ (div (- a b) b) 1)]
-    [else "Solo numeros enteros"]))
+    [else -1]))
   
 
 ;; 15.
