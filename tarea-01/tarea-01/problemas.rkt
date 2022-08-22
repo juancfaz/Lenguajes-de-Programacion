@@ -150,6 +150,16 @@
 
 ;; 19.
 
+(define (cartesian-product ls)
+  (combine-cartesian (first ls) (first (rest ls))))
+
+(define (combine-cartesian ls1 ls2)
+  (append-map (lambda (x)
+                (map (lambda (y)
+                       (list x y))
+                     ls2))
+              ls1))
+
 ;; 20.
 
 ;; 21.
