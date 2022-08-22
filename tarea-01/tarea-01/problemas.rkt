@@ -5,33 +5,32 @@
 ;; 1.
 
 (define (countdown n)
-  (if (= n -1)
-	null
-	(cons n (countdown (- n 1)))))
+  (cond
+    [(= n -1) null]
+    [else (cons n (countdown (- n 1)))]))
 
 ;; 2.
 
 (define (insertL x y ls)
-  (if (empty? ls)
-      null
-      (if (eq? (first ls) x)
-          (cons y (cons x (insertL x y (rest ls))))
-          (cons (first ls) (insertL x y (rest ls))))))
+  (cond
+    [(empty? ls) null]
+    [(eq? (first ls) x) (cons y (cons x (insertL x y (rest ls))))]
+    [else (cons (first ls) (insertL x y (rest ls)))]))
 
 ;; 3.
 
 (define (remv-1st x ls)
   (cond
-    ((empty? ls) null)
-    ((eqv? (first ls) x) (rest ls))
-    (else (cons (first ls) (remv-1st x (rest ls))))))
+    [(empty? ls) null]
+    [(eqv? (first ls) x) (rest ls)]
+    [else (cons (first ls) (remv-1st x (rest ls)))]))
 
 ;; 4.
 
 (define (map x ls)
-  (if (empty? ls)
-      null
-      (cons (x (first ls)) (map x (rest ls)))))
+  (cond
+    [(empty? ls) null]
+    [else (cons (x (first ls)) (map x (rest ls)))]))
 
 ;; 5.
 
@@ -44,6 +43,7 @@
 ;; 6.
 
 (define (zip ls1 ls2)
+  )
   (if (or (empty? ls1) (empty? ls2))
       null
       (cons (list (first ls1) (first ls2))
@@ -128,10 +128,10 @@
 
 ;; 17.
 
-(define (foldr op n ls)
+(define (foldr op s ls)
   (cond
-    [(empty? ls) n]
-    [else (op (first ls) (foldr op n (rest ls)))]))
+    [(empty? ls) s]
+    [else (op (first ls) (foldr op s (rest ls)))]))
 
 ;; 18.
 
