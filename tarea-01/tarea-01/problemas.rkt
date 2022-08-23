@@ -91,6 +91,17 @@
 
 ;; 12.
 
+#|
+
+(a b) y (a . (b . ()))
+
+siguiendo los mismos pasos del pdf
+conseguí el siguiente resultado:
+
+(w x) y (z) = (w. (x . ())) y (z . ())
+
+|#
+
 ;; 13.
 
 (define (binary->natural n)
