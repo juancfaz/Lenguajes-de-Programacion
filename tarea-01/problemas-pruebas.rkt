@@ -158,8 +158,8 @@
     (check-eqv? (snowball 12) 1)
     (check-eqv? (snowball 120) 1)
     (check-eqv? (snowball 9999) 1))
-  
-   (test-case "quine"
+
+  (test-case "quine"
      (let ((ns (make-base-namespace)))
       (check-equal? (eval quine ns) quine)
       (check-equal? (eval (eval quine ns) ns) quine))))
