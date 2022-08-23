@@ -200,6 +200,7 @@ conseguí el siguiente resultado:
        (lambda (x)
 	 (error 'error "Invalid value ~s~n" x))))
     (one-case (even-case (odd-case base)))))
+
 ;; 22.
 
 (provide (all-defined-out))
