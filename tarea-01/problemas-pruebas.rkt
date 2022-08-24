@@ -33,19 +33,33 @@
     (check-equal? (remv-1st 'a '(1 2 3))
                   '(1 2 3))
     (check-equal? (remv-1st 5 '(1 5 5 1))
-                  '(1 5 1)))
+                  '(1 5 1))
+    (check-equal? (remv-1st 5 '())
+                  '()))
   
   (test-case "map"
     (check-equal? (map sub1 '(1 2 3 4))
                   '(0 1 2 3))
     (check-equal? (map add1 '(1 2 3 4))
-                  '(2 3 4 5)))
+                  '(2 3 4 5))
+    (check-equal? (map sub1 '())
+                  '())
+    (check-equal? (map add1 '())
+                  '()))
   
   (test-case "filter"
     (check-equal? (filter even? '(1 2 3 4 5 6))
                   '(2 4 6))
     (check-equal? (filter odd? '(1 2 3 4 5 6))
-                  '(1 3 5)))
+                  '(1 3 5))
+    (check-equal? (filter even? '(1 3 5))
+                  '())
+    (check-equal? (filter odd? '(2 4 6))
+                  '())
+    (check-equal? (filter even? '())
+                  '())
+    (check-equal? (filter odd? '())
+                  '()))
   
   (test-case "zip"
     (check-equal? (zip '(1 2 3) '(a b c))
@@ -56,8 +70,8 @@
                   '((1 . a) (2 . b) (3 . c)))
     (check-equal? (zip '(1 2 3) '())
                   '())
-    (check-equal? (zip '(1 a "!") '("1" x @))
-                  '((1 . "1") (a . x) ("!" . @))))
+    (check-equal? (zip '() '())
+                  '()))
   
   (test-case "list-index-ofv"
     (check-eqv? (list-index-ofv 'x '(x y z x x)) 0)
@@ -115,26 +129,34 @@
   (test-case "append-map"
     (check-equal? (append-map countdown (countdown 5))
                   '(5 4 3 2 1 0 4 3 2 1 0 3 2 1 0 2 1 0 1 0 0))
-    (check-equal? (append-map countdown (countdown 1))
-                  '(1 0 0)))
+    (check-equal? (append-map countdown (countdown 0))
+                  '(0))
+    (check-equal? (append-map countdown (countdown -1))
+                  '()))
   
   (test-case "set-difference"
     (check-equal? (set-difference '(1 2 3 4 5) '(2 6 4 8))
                   '(1 3 5))
     (check-equal? (set-difference '(1 2 3 4 5) '())
                   '(1 2 3 4 5))
+    (check-equal? (set-difference '(1 1 1 1) '(1))
+                  '())
     (check-equal? (set-difference '() '(1 2 3 4 5))
                   '())
-    (check-equal? (set-difference '(1 1 1 1) '(1))
+    (check-equal? (set-difference '() '())
                   '()))
   
   (test-case "foldr"
     (check-equal? (foldr cons '() '(1 2 3 4))
                   '(1 2 3 4))
+    (check-equal? (foldr cons '() '())
+                  '())
     (check-eqv? (foldr + 0 '(1 2 3 4))
                 10)
     (check-eqv? (foldr * 1 '(1 2 3 4))
                 24)
+    (check-eqv? (foldr * 1 '())
+                1)
     (check-equal? (foldr cons '(4 3 2 1) '(1 2 3 4))
                   '(1 2 3 4 4 3 2 1)))
   
@@ -143,16 +165,22 @@
                   '((3 2 1) (3 2) (3 1) (3) (2 1) (2) (1) ()))
     (check-equal? (powerset '())
                   '(()))
-    (check-equal? (powerset '(a " " 1))
-                  '((a " " 1) (a " ") (a 1) (a) (" " 1) (" ") (1) ())))
+    (check-equal? (powerset '(()))
+                  '((()) ()))
+    (check-equal? (powerset '(() ()))
+                  '((() ()) (()) (()) ())))
   
   (test-case "cartesian-product"
     (check-equal? (cartesian-product '((5 4) (3 2 1)))
                   '((5 3) (5 2) (5 1) (4 3) (4 2) (4 1)))
+    (check-equal? (cartesian-product '((1) (1)))
+                  '((1 1)))
     (check-equal? (cartesian-product '(() (3 2 1)))
                   '())
-    (check-equal? (cartesian-product '((1) (1)))
-                  '((1 1))))
+    (check-equal? (cartesian-product '((1 2 3) ()))
+                  '())
+    (check-equal? (cartesian-product '(() ()))
+                  '()))
   
   (test-case "snowball"
     (check-eqv? (snowball 12) 1)
