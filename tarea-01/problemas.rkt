@@ -201,4 +201,6 @@ conseguí el siguiente resultado:
 	 (error 'error "Invalid value ~s~n" x))))
     (one-case (even-case (odd-case base)))))
 
+(define quine 'F)
+
 (provide (all-defined-out))
