@@ -1,5 +1,0 @@
-#lang plait
-
-(define-type Posn
-  (pos [x : Number]
-       [y : Number]))
