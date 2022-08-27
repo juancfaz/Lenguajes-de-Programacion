@@ -1,67 +1,86 @@
 #lang plait
 
+;; Eval
+
 (define (eval [input : S-Exp]) : Value
   (interp (desugar (parse input))))
 
-;; Types
+;; values
 
 (define-type Value
-  (numV [value : Number])
-  (boolV [value : Boolean])
-  (opV [op : Operator]
-        [l : Expr]
-        [r : Expr])
-  (ifV [e1 : Expr]
-       [e2 : Expr]
-       [e3 : Expr]))
+  (numV [n : Number])
+  (ifV [e1 : Value]
+       [e2 : Value]
+       [e3 : Value]))
+
+;; Operators
+
+(define (numV-op [op : (Number Number -> Number)]
+                 [l : Value] [r : Value]) : Value
+  (cond
+    [(and (numV? l) (numV? r))
+     (numV (op (numV-n l) (numV-n r)))]
+    [else
+     (error 'numV-op "No es un numero")]))
+
+(define (numV-cmp [cmp : (Number Number -> Boolean)]
+                 [l : Value] [r : Value]) : Value
+  (cond
+    [(and (numV? l) (numV? r))
+     (numV (if (cmp (numV-n l) (numV-n r)) 1 0))]
+    [else
+     (error 'numV-op "No es un booleano")]))
 
 ;; Core
 
-(define-type ExprC
+(define-type ArithC
   [numC (n : Number)]
-  [plusC (l : ExprC) (r : ExprC)]
-  [multC (l : ExprC) (r : ExprC)]
-  [minusC (l : ExprC) (r : ExprC)]
-  [ifC   (e1 : ExprC) (e2 : ExprC) (e3 : ExprC)])
+  [plusC (l : ArithC) (r : ArithC)]
+  [minusC (l : ArithC) (r : ArithC)]
+  [multC (l : ArithC) (r : ArithC)]
+  [ifC   (e1 : ArithC) (e2 : ArithC) (e3 : ArithC)])
 
 ;; Sugar
 
-(define-type sugar
-  [numS (n : value)]
-  [plusS (l : sugar) (r : sugar)]
-  [multS (l : sugar) (r : sugar)]
-  [ifS (e1 : sugar)
-       (e2 : sugar)
-       (e3 : sugar)])
+(define-type ArithS
+  [numS (n : Number)]
+  [plusS (l : ArithS) (r : ArithS)]
+  [minusS (l : ArithS) (r : ArithS)]
+  [multS (l : ArithS) (r : ArithS)]
+  [ifS (e1 : ArithS) (e2 : ArithS) (e3 : ArithS)])
 
-;; parse
+;; Parse
 
-(define (parse [s : S-Exp]) : ArithC
-  (cond [(s-exp-number? s) (numC (s-exp->number s))]
-        [(s-exp-list? s)
-         (let ([ls (s-exp->list s)])
-           (cond
-         [(symbol=? '+ (s-exp->symbol (first ls)))
-          (plusC (parse (second ls)) (parse (third ls)))]
-         [(symbol=? '* (s-exp->symbol (first ls)))
-          (multC (parse (second ls)) (parse (third ls)))]
-         [(symbol=? 'ifC (s-exp->symbol (first ls)))
-          (ifC (parse (second ls)) (parse (third ls)) (parse (fourth ls)))]))]))
+(define (parse [s : S-Exp]) : ArithS
+  (cond [(s-exp-number? s) (numS (s-exp->number s))]
+    [(s-exp-list? s)
+     (let ([sl (s-exp->list s)])
+       (cond
+         [(symbol=? '+ (s-exp->symbol (first sl)))
+          (plusS (parse (second sl)) (parse (third sl)))]
+         [(symbol=? '- (s-exp->symbol (first sl)))
+          (minusS (parse (second sl)) (parse (third sl)))]
+         [(symbol=? '* (s-exp->symbol (first sl)))
+          (multS (parse (second sl)) (parse (third sl)))]
+         [else (error 'parse "operación aritmética malformada")]))]
+    [else (error 'parse "expresión aritmética malformada")]))
 
-;; interp
+;; Interpreter
 
-(define (interp [arg : ExprC]) : Value
-  (type-case ExprC arg
-    [numC (n) (numV n)]
-    [plusC (l r) (opV + (interp l) (interp r))]
-    [multC (l r) (opV * (interp l) (interp r))]
-    [ifC (e1 e2 e3) (if (= (numV-n (interp e1)) 0) (interp e3) (interp e2))]))
+(define (interp [a : ArithC]) : Value
+  (type-case ArithC a
+    [(numC n) (numV n)]
+    [(plusC l r) (numV-op + (interp l) (interp r))]
+    [(minusC l r) (numV-op + (interp l) (interp r))]
+    [(multC l r) (numV-op * (interp l) (interp r))]
+    [(ifC e1 e2 e3) (if (= (numV-n  (interp e1)) 0) (interp e3) (interp e2))]))
 
-;; desugar
+;; Desugar
 
-(define (desugar [sugar : ArithC]) : ExprC
-  (type-case ArithC sugar
-    [numS (n) (numC n)]
-    [plusS (l r) (plusC (desugar l) (desugar r))]
-    [multS (l r) (multC (desugar l) (desugar r))]
-    [ifS (e1 e2 e3) (ifC (desugar e1) (desugar e2) (desugar e3))]))
+(define (desugar [a : ArithS]) : ArithC
+  (type-case ArithS a
+    [(numS n) (numC n)]
+    [(plusS l r) (plusC (desugar l) (desugar r))]
+    [(minusS l r) (minusC (desugar l) (desugar r))]
+    [(multS l r) (multC (desugar l) (desugar r))]
+    [(ifS e1 e2 e3) (ifC (desugar e1) (desugar e2) (desugar e3))]))
