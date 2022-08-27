@@ -8,12 +8,9 @@
 ;; values
 
 (define-type Value
-  (numV [n : Number])
-  (ifV [e1 : Value]
-       [e2 : Value]
-       [e3 : Value]))
+  (numV [n : Number]))
 
-;; Operators
+;; Operator
 
 (define (numV-op [op : (Number Number -> Number)]
                  [l : Value] [r : Value]) : Value
@@ -23,22 +20,13 @@
     [else
      (error 'numV-op "No es un numero")]))
 
-(define (numV-cmp [cmp : (Number Number -> Boolean)]
-                 [l : Value] [r : Value]) : Value
-  (cond
-    [(and (numV? l) (numV? r))
-     (numV (if (cmp (numV-n l) (numV-n r)) 1 0))]
-    [else
-     (error 'numV-op "No es un booleano")]))
-
 ;; Core
 
 (define-type ArithC
   [numC (n : Number)]
   [plusC (l : ArithC) (r : ArithC)]
   [minusC (l : ArithC) (r : ArithC)]
-  [multC (l : ArithC) (r : ArithC)]
-  [ifC   (e1 : ArithC) (e2 : ArithC) (e3 : ArithC)])
+  [multC (l : ArithC) (r : ArithC)])
 
 ;; Sugar
 
@@ -46,8 +34,7 @@
   [numS (n : Number)]
   [plusS (l : ArithS) (r : ArithS)]
   [minusS (l : ArithS) (r : ArithS)]
-  [multS (l : ArithS) (r : ArithS)]
-  [ifS (e1 : ArithS) (e2 : ArithS) (e3 : ArithS)])
+  [multS (l : ArithS) (r : ArithS)])
 
 ;; Parse
 
@@ -71,9 +58,8 @@
   (type-case ArithC a
     [(numC n) (numV n)]
     [(plusC l r) (numV-op + (interp l) (interp r))]
-    [(minusC l r) (numV-op + (interp l) (interp r))]
-    [(multC l r) (numV-op * (interp l) (interp r))]
-    [(ifC e1 e2 e3) (if (= (numV-n  (interp e1)) 0) (interp e3) (interp e2))]))
+    [(minusC l r) (numV-op - (interp l) (interp r))]
+    [(multC l r) (numV-op * (interp l) (interp r))]))
 
 ;; Desugar
 
@@ -82,5 +68,4 @@
     [(numS n) (numC n)]
     [(plusS l r) (plusC (desugar l) (desugar r))]
     [(minusS l r) (minusC (desugar l) (desugar r))]
-    [(multS l r) (multC (desugar l) (desugar r))]
-    [(ifS e1 e2 e3) (ifC (desugar e1) (desugar e2) (desugar e3))]))
+    [(multS l r) (multC (desugar l) (desugar r))]))
