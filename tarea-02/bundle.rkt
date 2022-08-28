@@ -28,9 +28,12 @@
     [(empty? l) null]
     [else (drop (rest l) (- n 1))]))
 
+(define (list->chunks ls n)
+  (cond
+    [(empty? ls) null]
+    [else (cons (take ls n) (list->chunks (drop ls n) n))]))
+
 (define (bundle s n)
   (cond
     [(null? s) null]
-    [else
-     (cons (implode (take s n))
-           (bundle (drop s n) n))]))
+    [else (list->chunks s n)]))
