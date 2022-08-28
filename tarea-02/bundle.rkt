@@ -37,3 +37,8 @@
   (cond
     [(null? s) null]
     [else (list->chunks s n)]))
+
+(define (partition s n)
+  (cond
+    [(= (string-length s) 0) null]
+    [else (cons (explode (substring s 0 n)) (substring s n (- (string-length s) n)))]))
