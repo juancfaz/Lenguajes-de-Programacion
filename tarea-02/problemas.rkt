@@ -31,7 +31,7 @@
 (define (list->chunks ls n)
   (cond
     [(empty? ls) null]
-    [else (cons (take ls n) (list->chunks (drop ls n) n))]))
+    [else (cons (implode (take ls n)) (list->chunks (drop ls n) n))]))
 
 (define (bundle s n)
   (cond
@@ -41,4 +41,15 @@
 (define (partition s n)
   (cond
     [(= (string-length s) 0) null]
-    [else (cons (explode (substring s 0 n)) (substring s n (- (string-length s) n)))]))
+    [else (cons (substring (mod s n) 0 n) (partition (substring (mod s n) n (string-length (mod s n)) ) n))]))
+
+(define (mod s n)
+  (cond
+    [(not (zero? (modulo (string-length s) n))) (mod (string-append s " ") n)]
+    [else s]))
+
+(define (remv-wh ls)
+  (cond
+    [(empty? ls) null]
+    [(not (eq? (rest ls) " ")) (cons (first ls) (remv-wh (rest ls)))]
+    [else null]))
