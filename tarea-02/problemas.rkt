@@ -48,8 +48,40 @@
     [(not (zero? (modulo (string-length s) n))) (mod (string-append s " ") n)]
     [else s]))
 
+(define (empty ls)
+  (cond
+    [(empty? ls) null]
+    [else (cons (first ls) (empty (rest ls)))]))
+
 (define (remv-wh ls)
   (cond
     [(empty? ls) null]
     [(not (eq? (rest ls) " ")) (cons (first ls) (remv-wh (rest ls)))]
     [else null]))
+
+(define (isort ls predicado)
+  (if (empty? ls)
+      null
+      (insert (first ls)
+              (isort (rest ls) predicado) predicado)))
+ 
+
+(define (insert n ls predicado)
+  (cond
+    [(empty? ls) (list n)]
+    [(predicado n (first ls)) (cons n ls)]
+    [else (cons (first ls) (insert n (rest ls) predicado))]))
+
+(define (quicksort ls)
+  (cond
+    [(empty? ls) null]
+    [else
+     (define pivot (first ls))
+     (append (quicksort (smallers ls pivot))
+             (list pivot) (quicksort (largers ls pivot)))]))
+
+(define (smallers ls pivot)
+  ...)
+
+(define (largers ls pivot)
+  ...)
