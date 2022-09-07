@@ -80,8 +80,29 @@
      (append (quicksort (smallers ls pivot arg) arg)
              (list pivot) (quicksort (largers ls pivot arg) arg))]))
 
+#|Problema 10|#
 (define (smallers ls pivot arg)
   (filter (lambda (x) (arg x pivot)) ls))
 
 (define (largers ls pivot arg)
   (filter (lambda (x) (and (not (arg x pivot)) (not (equal? x pivot)))) ls))
+
+#|
+Problema 11
+
+'(1 2 1)
+si tomamos el pivote, y lo comparamos
+el segundo elemento, el segundo elemento
+es mayor que el pivote, por lo tanto
+hay una lista con el elemento 2 '(2)
+donde el pivote ahora es 2. Con
+el siguiente elemento pasa que el 1
+es igual y no menor, ni mayor que el
+privote, por lo tanto tenemos '0.
+
+
+por lo que al final nuestro algoritmo
+juntara los pivotes y el resultado es:
+
+'(1 2)
+|#
