@@ -73,19 +73,16 @@
     [else (cons (first ls) (insert n (rest ls) predicado))]))
 
 (define (quicksort ls arg)
+  (unless (procedure? arg) (error 'quicksort "Esperaba un predicado valido, recibi ~e" arg))
   (cond
     [(empty? ls) null]
+    [(< (length ls) 100) (isort ls arg)]
     [else
      (define pivot (first ls))
+     (define smallers (filter (lambda (x) (arg x pivot)) ls))
+     (define largers  (filter (lambda (x) (and (not (arg x pivot)) (not (equal? x pivot)))) ls))
      (append (quicksort (smallers ls pivot arg) arg)
              (list pivot) (quicksort (largers ls pivot arg) arg))]))
-
-#|Problema 10|#
-(define (smallers ls pivot arg)
-  (filter (lambda (x) (arg x pivot)) ls))
-
-(define (largers ls pivot arg)
-  (filter (lambda (x) (and (not (arg x pivot)) (not (equal? x pivot)))) ls))
 
 #|
 Problema 11
