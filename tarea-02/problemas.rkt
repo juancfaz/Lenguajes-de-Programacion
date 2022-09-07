@@ -77,8 +77,8 @@
     [(empty? ls) null]
     [else
      (define pivot (first ls))
-     (append (quicksort (smallers ls pivot arg))
-             (list pivot) (quicksort (largers ls pivot arg)))]))
+     (append (quicksort (smallers ls pivot arg) arg)
+             (list pivot) (quicksort (largers ls pivot arg) arg))]))
 
 (define (smallers ls pivot arg)
   (filter (lambda (x) (arg x pivot)) ls))
