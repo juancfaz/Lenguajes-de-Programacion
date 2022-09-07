@@ -76,7 +76,7 @@
   (unless (procedure? arg) (error 'quicksort "Esperaba un predicado valido, recibi ~e" arg))
   (cond
     [(empty? ls) null]
-    [(< (length ls) 100) (isort ls arg)]
+    [(< (length ls) 50) (isort ls arg)]
     [else
      (define pivot (first ls))
      (define smallers (filter (lambda (x) (arg x pivot)) ls))
