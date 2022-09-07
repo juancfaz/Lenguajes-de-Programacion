@@ -51,17 +51,33 @@
     [(null? s) null]
     [else (list->chunks s n)]))
 
-; partition : string?, integer? -> list
+; partition :
 (define (partition s n)
+  (append (reverse (rest (reverse (partition-aux s n)))) (remv-wh (partition-aux s n))))
+
+; partition-aux : string?, integer? -> list
+(define (partition-aux s n)
   (cond
     [(= (string-length s) 0) null]
-    [else (cons (substring (mod s n) 0 n) (partition (substring (mod s n) n (string-length (mod s n)) ) n))]))
+    [else (cons (substring (mod s n) 0 n) (partition-aux (substring (mod s n) n (string-length (mod s n)) ) n))]))
+
+; remv-wh : list? -> list
+(define (remv-wh ls)
+  (cond
+    [(empty? ls) null]
+    [else (cons (string-trim-both (last ls)) null)]))
 
 ; mod : string?, integer? -> string
 (define (mod s n)
   (cond
     [(not (zero? (modulo (string-length s) n))) (mod (string-append s " ") n)]
     [else s]))
+
+; string-trim-both : string? -> string
+(define string-trim-both
+  (let ((r (regexp "^[ \t\r]*(.*?)[ \t\r]*$")))
+    (lambda (s)
+      (cadr (regexp-match r s)))))
 
 ; isort : list?, proc? -> list
 (define (isort ls predicado)
