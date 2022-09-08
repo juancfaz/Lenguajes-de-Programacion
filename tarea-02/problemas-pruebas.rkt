@@ -25,6 +25,8 @@
     (error 'implode "esperaba una lista de cadenas unitarias, pero recibí: ~e" ls))
   (apply string-append ls))
 
+;; Problema 3.
+
 ; take : list?, integer? -> list
 (define (take l n)
   (cond
@@ -38,6 +40,8 @@
     [(= n 0) l]
     [(empty? l) null]
     [else (drop (rest l) (- n 1))]))
+
+;; Problema 6.
 
 ; list->chunks : list?, integer? -> list
 (define (list->chunks ls n)
@@ -55,7 +59,9 @@
     [(null? s) null]
     [else (cons (implode (take s n)) (bundle (drop s n) n))]))
 
-; partition :
+;; Problema 7.
+
+; partition : string?, integer? -> list
 (define (partition s n)
   (append (reverse (rest (reverse (partition-aux s n)))) (remv-wh (partition-aux s n))))
 
@@ -83,6 +89,8 @@
     (lambda (s)
       (cadr (regexp-match r s)))))
 
+;; Problema 8.
+
 ; isort : list?, proc? -> list
 (define (isort ls arg)
   (if (empty? ls)
@@ -96,6 +104,8 @@
     [(empty? ls) (list n)]
     [(arg n (first ls)) (cons n ls)]
     [else (cons (first ls) (insert n (rest ls) arg))]))
+
+;; Problema 10 - 15
 
 ; quicksort : list?, proc? -> list
 (define (quicksort ls arg)
