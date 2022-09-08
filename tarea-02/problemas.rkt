@@ -47,9 +47,13 @@
 
 ; bundle : (list-of-symbol?), integer? -> list
 (define (bundle s n)
+  (unless (unit-string-list? s)
+	(error 'bundle "esperaba una lista de cadenas unitarias, pero recibí: ~e" s))
+  (unless (and (> n 0) (list? s))
+    (error 'bundle "n debe ser mayor a 0, pero recibí: ~e" n))
   (cond
     [(null? s) null]
-    [else (list->chunks s n)]))
+    [else (cons (implode (take s n)) (bundle (drop s n) n))]))
 
 ; partition :
 (define (partition s n)
