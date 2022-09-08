@@ -167,4 +167,4 @@ juntara los pivotes y el resultado es:
 (define (sierpinski side)
   (cond [(<= side 4) (triangle side 1 "red")]
         [else (define half (sierpinski (/ side 2)))
-              (vc-append half (hc-append half half))]
+              (vc-append half (hc-append half half))]))
