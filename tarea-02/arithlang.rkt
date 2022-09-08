@@ -2,23 +2,8 @@
 
 ;; Eval
 
-(define (eval [input : S-Exp]) : Value
+(define (eval [input : S-Exp]) : Number
   (interp (desugar (parse input))))
-
-;; values
-
-(define-type Value
-  (numV [n : Number]))
-
-;; Operator
-
-(define (numV-op [op : (Number Number -> Number)]
-                 [l : Value] [r : Value]) : Value
-  (cond
-    [(and (numV? l) (numV? r))
-     (numV (op (numV-n l) (numV-n r)))]
-    [else
-     (error 'numV-op "No es un numero")]))
 
 ;; Core
 
@@ -54,12 +39,12 @@
 
 ;; Interpreter
 
-(define (interp [a : ArithC]) : Value
+(define (interp [a : ArithC]) : Number
   (type-case ArithC a
-    [(numC n) (numV n)]
-    [(plusC l r) (numV-op + (interp l) (interp r))]
-    [(minusC l r) (numV-op - (interp l) (interp r))]
-    [(multC l r) (numV-op * (interp l) (interp r))]))
+    [(numC n) n]
+    [(plusC l r) (+ (interp l) (interp r))]
+    [(minusC l r) (- (interp l) (interp r))]
+    [(multC l r) (* (interp l) (interp r))]))
 
 ;; Desugar
 
