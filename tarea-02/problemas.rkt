@@ -84,11 +84,11 @@
       (cadr (regexp-match r s)))))
 
 ; isort : list?, proc? -> list
-(define (isort ls predicado)
+(define (isort ls arg)
   (if (empty? ls)
       null
       (insert (first ls)
-              (isort (rest ls) predicado) predicado)))
+              (isort (rest ls) arg) arg)))
  
 ; insert : integer?, list?, proc? -> list
 (define (insert n ls arg)
@@ -110,6 +110,7 @@
      (append (quicksort (smallers ls pivot arg) arg)
              (list pivot) (quicksort (largers ls pivot arg) arg))]))
 
+
 #|
 Problema 11
 
@@ -129,3 +130,41 @@ juntara los pivotes y el resultado es:
 
 '(1 2)
 |#
+
+
+(define (gcd-structural n m)
+  (define (find-largest-divisor k)
+    (cond [(= k 1) 1]
+          [(= (remainder n k) (remainder m k) 0) k]
+          [else (find-largest-divisor (- k 1))]))
+  (find-largest-divisor (min n m)))
+
+(define (gcd-generative n m)
+  (define (find-largest-divisor max min)
+    (if (= min 0)
+        max
+        (find-largest-divisor min (remainder max min))))
+  (find-largest-divisor (max n m) (min n m)))
+
+(require pict)
+(require racket/draw)
+
+(define (triangle side width color)
+  (define w side)
+  (define h (* side (sin (/ pi 3))))
+  (define (draw-it ctx dx dy)
+	(define prev-pen (send ctx get-pen))
+	(define path (new dc-path%))
+	(send ctx set-pen (new pen% [width width] [color color]))
+	(send path move-to 0 h)
+	(send path line-to w h)
+	(send path line-to (/ w 2) 0)
+	(send path close)
+	(send ctx draw-path path dx dy)
+	(send ctx set-pen prev-pen))
+	(dc draw-it w h))
+
+(define (sierpinski side)
+  (cond [(<= side 4) (triangle side 1 "red")]
+        [else (define half (sierpinski (/ side 2)))
+              (vc-append half (hc-append half half))]
