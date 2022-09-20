@@ -60,8 +60,8 @@
     [(boolS value) (boolC value)]
     [(idS name) (idC name)]
     [(ifS a b c) (ifC (desugar a) (desugar b) (desugar c))]
-    [(andS left right) (ifC (desugar left) (desugar right) (boolC #f))]
-    [(orS left right) (ifC (desugar left) (boolC #t) (desugar right))]
+    [(andS left right) (ifC (desugar left) (ifC (desugar right) (boolC #t) (boolC #f)) (boolC #f))]
+    [(orS left right) (ifC (desugar left) (boolC #t) (ifC (desugar right) (boolC #t) (boolC #f)))]
     [(binopS op left right)
      (binopC op (desugar left) (desugar right))]
     [(funS param body) (funC param (desugar body))]
@@ -78,7 +78,7 @@
 (define (unbound-identifier-error [name : Symbol])
   (error 'interp
          (string-append
-          "unbound identifier: "
+          "identificador no está enlazado"
           (to-string name))))
 
 (define (bad-app-error [v : Value])
@@ -123,7 +123,7 @@
      (let ([v1 (interp-helper a env)])
       (cond
          [(not (boolV? v1))
-          (error 'ifC "Valor no booleano")]
+          (error 'ifC "no es un valor booleano")]
          [(boolV-value v1) (interp-helper b env)]
          [else (interp-helper c env)]))]
     [(binopC op left right)
@@ -136,8 +136,8 @@
        (cond
          [(not (funV? v1))
           (bad-app-error v1)]
-         [else (let ([nenv (cons (binding (funV-arg v1) (interp-helper arg env)) env)])
-                 (interp-helper (funV-body v1) nenv))]))]))
+         [else (let ([nenv (cons (binding (funV-arg v1) (interp-helper arg env)) (funV-env v1))])
+             (interp-helper (funV-body v1) nenv))]))]))
 
 (define (interp-binop [op : Operator]
                       [left : Value]
@@ -148,29 +148,29 @@
          (if (numV? right)
              (numV (+ (numV-value left)
                       (numV-value right)))
-             (error 'binop "upsi dupsi deisy"))
-         (error 'binop "upsi deisy dupsi"))]
+             (error 'binop "argumento incorrecto"))
+         (error 'binop "argumento incorrecto"))]
     [(appendO)
      (if (strV? left)
          (if (strV? right)
              (strV (string-append (strV-value left)
                       (strV-value right)))
-             (error 'binop "upsi dupsi deisy"))
-         (error 'binop "upsi deisy dupsi"))]
+             (error 'binop "argumento incorrecto"))
+         (error 'binop "argumento incorrecto"))]
     [(numeqO)
      (if (numV? left)
          (if (numV? right)
              (boolV (= (numV-value left)
                       (numV-value right)))
-             (error 'binop "upsi dupsi deisy"))
-         (error 'binop "upsi deisy dupsi"))]
+             (error 'binop "argumento incorrecto"))
+         (error 'binop "argumento incorrecto"))]
     [(streqO)
      (if (strV? left)
          (if (strV? right)
-             (boolV (equal? (strV-value left)
+             (boolV (string=? (strV-value left)
                       (strV-value right)))
-             (error 'binop "upsi dupsi deisy"))
-         (error 'binop "upsi deisy dupsi"))]))
+             (error 'binop "argumento incorrecto"))
+         (error 'binop "argumento incorrecto"))]))
 
 ;;;;;;;;;;;;
 ;; PARSER ;;
