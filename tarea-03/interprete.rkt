@@ -1,33 +1,78 @@
 #lang plait
 
-(print-only-errors #t)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; EXPRESIONES DEL LENGUAJE EXTENDIDO ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-type Value
-  (numV [n : Number])
-  (strV [s : String])
-  (boolV [b : Boolean])
-  )
+  (numV [value : Number])
+  (strV [value : String])
+  (boolV [value : Boolean])
+  (idV [name : Symbol])
+  (funV [arg : Symbol]
+		[body : ExprC]))
+
+(define-type Operator
+  (plusO)
+  (appendO)
+  (numeqO)
+  (streqO))
+
+(define-type ExprS
+  (numS [value : Number])
+  (strS [value : String])
+  (boolS [value : Boolean])
+  (idS [name : Symbol])
+  (ifS [a : ExprS] [b : ExprS] [c : ExprS])
+  (andS [left : ExprS] [right : ExprS])
+  (orS [left : ExprS] [right : ExprS])
+  (binopS [op : Operator] [left : ExprS] [right : ExprS])
+  (funS [param : Symbol] [body : ExprS])
+  (letS [name : Symbol] [value : ExprS] [body : ExprS])
+  (appS [func : ExprS] [arg : ExprS]))
 
 (define-type ExprC
-  (numC [n : Number])
-  (strC [s : String])
+  (numC [value : Number])
+  (strC [value : String])
+  (boolC [value : Boolean])
   (idC [name : Symbol])
-  (boolC [b : Boolean])
-  (plusO [l : ExprC] [r : ExprC])
-  (appendO [l : ExprC] [r : ExprC])
-  #|(numeqO [l : Number] [r : ExprC])
-  (streqO [l : ExprC] [r : ExprC])|#
-  )
+  (ifC [a : ExprC] [b : ExprC] [c : ExprC])
+  (binopC [op : Operator] [left : ExprC] [right : ExprC])
+  (funC [param : Symbol] [body : ExprC])
+  (appC [func : ExprC] [arg : ExprC]))
 
-(define (bad-arg-to-op-error [op : Symbol] [v : Value])
+;;;;;;;;;;;;;;;
+;; EVALUADOR ;;
+;;;;;;;;;;;;;;;
+
+(define (eval [str : S-Exp]) : Value
+  (interp (desugar (parse str)) empty-env))
+
+;;;;;;;;;;;;;
+;; DESUGAR ;;
+;;;;;;;;;;;;;
+
+(define (desugar [e : ExprS]) : ExprC
+  (type-case ExprS e
+    [(numS value) (numC value)]
+    [(strS value) (strC value)]
+    [(boolS value) (boolC value)]
+    [(idS name) (idC name)]
+    [(ifS a b c) (ifC (desugar a) (desugar b) (desugar c))]
+    [(andS left right) (ifC (desugar left) (desugar right) (boolC #f))]
+    [(orS left right) (ifC (desugar left) (boolC #t) (desugar right))]
+    [(binopS op left right)
+     (binopC op (desugar left) (desugar right))]
+    [(funS param body) (funC param (desugar body))]
+    [(letS name value body) (appC (funC name (desugar body)) (desugar value))]
+    [(appS func arg) (appC (desugar func) (desugar arg))]))
+
+
+(define (bad-conditional-error [v : Value])
   (error 'interp
          (string-append
-          "bad argument to operator "
-          (string-append
-           (to-string op)
-           (string-append
-            ": "
-            (to-string v))))))
+          "bad conditional to if expression: "
+          (to-string v))))
 
 (define (unbound-identifier-error [name : Symbol])
   (error 'interp
@@ -35,17 +80,19 @@
           "unbound identifier: "
           (to-string name))))
 
+(define (bad-app-error [v : Value])
+  (error 'interp
+         (string-append
+          "identicador no es una función"
+          (to-string v))))
 
 (define-type Binding
   (binding [name : Symbol]
-        [value : Value]))
+           [value : Value]))
 
-(define-type-alias Env (Listof Binding))
+(define-type-alias Environment (Listof Binding))
 
 (define empty-env empty)
-
-(define (extend-env name value env)
-  (cons (binding name value) env))
 
 (define (lookup-env name env)
   (if (empty? env)
@@ -54,82 +101,99 @@
           (binding-value (first env))
           (lookup-env name (rest env)))))
 
-(define-type ExprS
-  (numS [n : Number])
-  (strS [s : String])
-  (idS [name : Symbol])
-  (boolS [b : Boolean])
-  (plusS [l : ExprS] [r : ExprS])
-  (appendS [l : ExprS] [r : ExprS])
-  #|(ifS [a : ExprS] [b : ExprS] [c : ExprS])
-  (lamS [param : Symbol]
-        [body : ExprS])
-  (funS [param : Symbol]
-        [body : ExprS])
-  (appS [func : ExprS]
-         [arg : ExprS])
-  (andS [l : ExprS] [r : ExprS])
-  (orS [l : ExprS] [r : ExprS])
-  (binopS [l : ExprS] [r : ExprS])|#
-  )
+(define (extend-env name value env)
+  (cons (binding name value) env))
 
-(define (interp [e : ExprC] [env : Env]) : Value
+(define (interp [e : ExprC]) : Value
+   (interp-helper e env))
+
+;;;;;;;;;;;;
+;; INTERP ;;
+;;;;;;;;;;;;
+
+(define (interp-helper [e : ExprC] [env : Environment]) : Value
   (type-case ExprC e
-    [(numC n) (numV n)]
-    [(strC s) (strV s)]
-    [(idC name) (lookup-env name env)]
-    [(boolC b) (boolV b)]
-    [(plusO l r)
-     (let ([v1 (interp l env)]
-           [v2 (interp r env)])
-       (cond [(not (numV? v1))
-              (bad-arg-to-op-error '+ v1)]
-             [(not (numV? v2))
-              (bad-arg-to-op-error '+ v2)]
-             [else
-              (numV (+ (numV-n v1) (numV-n v2)))]))]
-    [(appendO l r)
-     (let ([v1 (interp l env)]
-           [v2 (interp r env)])
-       (cond [(not (strV? v1))
-              (bad-arg-to-op-error '++ v1)]
-             [(not (strV? v2))
-              (bad-arg-to-op-error '++ v2)]
-             [else
-              (strV (string-append (strV-s v1) (strV-s v2)))]))]
-    ))
+    [(numC value) (numV value)]
+    [(strC value) (strV value)]
+    [(boolC value) (boolV value)]
+    [(idC name)
+      (lookup-env name env)]
+    [(ifC a b c)
+     (let ([v1 (interp a env)])
+      (cond
+         [(not (boolV? v1))
+          (error 'ifC "Valor no booleano")]
+         [(boolV-value v1) (interp b env)]
+         [else (interp c env)]))]
+    [(binopC op left right)
+     (let ([left (interp-helper left env)])
+       (let ([right (interp-helper right env)])
+         (interp-binop op left right)))]
+    [(funC param body) (funV param body env)]
+    [(appC func arg)
+      (let ([v1 (interp-helper func env)])
+       (cond
+         [(not (funV? v1))
+          (bad-app-error v1)]
+         [else (let ([nenv (cons (binding (funV-arg v1) (interp arg env)) env)])
+                 (interp (funV-body v1) nenv))]))]))
 
-(define (desugar [e : ExprS]) : ExprC
-  (type-case ExprS e
-    [(numS n) (numC n)]
-    [(strS s) (strC s)]
-    [(idS name) (idC name)]
-    [(boolS b) (boolC b)]
-    [(plusS l r) (plusO (desugar l) (desugar r))]
-    [(appendS l r) (appendO (desugar l) (desugar r))]
-    ))
+(define (interp-binop [op : Operator]
+                      [left : Value]
+                      [right : Value]
+                      [env : Environment]) : Value
+  (type-case Operator op
+    [(plusO)
+     (if (numV? left)
+         (if (numV? right)
+             (numV (+ (numV-value left)
+                      (numV-value right)))
+             (error 'binop "upsi dupsi deisy"))
+         (error 'binop "upsi deisy dupsi"))]
+    [(appendO)
+     (if (strV? left)
+         (if (strV? right)
+             (strV (string-append (strV-value left)
+                      (strV-value right)))
+             (error 'binop "upsi dupsi deisy"))
+         (error 'binop "upsi deisy dupsi"))]
+    [(numeqO)
+     (if (numV? left)
+         (if (numV? right)
+             (boolV (= (numV-value left)
+                      (numV-value right)))
+             (error 'binop "upsi dupsi deisy"))
+         (error 'binop "upsi deisy dupsi"))]
+    [(streqO)
+     (if (strV? left)
+         (if (strV? right)
+             (boolV (equal? (strV-value left)
+                      (strV-value right)))
+             (error 'binop "upsi dupsi deisy"))
+         (error 'binop "upsi deisy dupsi"))]))
 
-(define (parse-error e)
-  (error 'parse (string-append "malformed-input: " (to-string e))))
+;;;;;;;;;;;;
+;; PARSER ;;
+;;;;;;;;;;;;
 
 (define (parse [in : S-Exp]) : ExprS
   (cond
-  [(s-exp-number? in) (parse-number in)]
-  [(s-exp-string? in) (parse-string in)]
-  [(s-exp-match? `true in) (boolS #t)]
-  [(s-exp-match? `false in) (boolS #f)]
-  ;;[(s-exp-match? `{if ANY ...} in) (parse-if in)]
-  ;;[(s-exp-match? `{and ANY ...} in) (parse-and in)]
-  ;;[(s-exp-match? `{or ANY ...} in) (parse-or in)]
-  #|[(s-exp-match? `{+ ANY ...} in) (parse-+ in)]
-  [(s-exp-match? `{++ ANY ...} in) (parse-++ in)]
-  [(s-exp-match? `{num= ANY ...} in) (parse-num= in)]
-  [(s-exp-match? `{str= ANY ...} in) (parse-str= in)]
-  [(s-exp-match? `{fun ANY ...} in) (parse-fun in)]
-  [(s-exp-match? `{let {SYMBOL ANY} ANY ...} in) (parse-let in)]
-  [(s-exp-match? `{ANY ...} in) (parse-app in)]
-  [(s-exp-symbol? in) (parse-id in)]|#
-  ))
+    [(s-exp-number? in)                            (parse-number in)]
+    [(s-exp-string? in)                            (parse-string in)]
+    [(s-exp-match? `true in)                       (boolS #t)]
+    [(s-exp-match? `false in)                      (boolS #f)]
+    [(s-exp-match? `{if ANY ...} in)               (parse-if in)]
+    [(s-exp-match? `{and ANY ...} in)              (parse-and in)]
+    [(s-exp-match? `{or ANY ...} in)               (parse-or in)]
+    [(s-exp-match? `{+ ANY ...} in)                (parse-+ in)]
+    [(s-exp-match? `{++ ANY ...} in)               (parse-++ in)]
+    [(s-exp-match? `{num= ANY ...} in)             (parse-num= in)]
+    [(s-exp-match? `{str= ANY ...} in)             (parse-str= in)]
+    [(s-exp-match? `{fun ANY ...} in)              (parse-fun in)]
+    [(s-exp-match? `{let {SYMBOL ANY} ANY ...} in) (parse-let in)]
+    [(s-exp-match? `{ANY ...} in)                  (parse-app in)]
+    [(s-exp-symbol? in)                            (parse-id in)]
+    [else (error 'parse "expresión malformada")]))
 
 (define (parse-number in)
   (numS (s-exp->number in)))
@@ -140,7 +204,7 @@
 (define (parse-id in)
   (idS (s-exp->symbol in)))
 
-#|(define (parse-if in)
+(define (parse-if in)
   (let ([inlst (s-exp->list in)])
     (if (equal? (length inlst) 4)
         (ifS (parse (second inlst))
@@ -187,27 +251,24 @@
 (define (parse-fun in)
   (cond
     [(s-exp-match? `{fun SYMBOL ANY ...} in)
-      (let ([inlst (s-exp->list in)])
-        (if (equal? (length inlst) 3)
-            (funS (s-exp->symbol (second inlst)) (parse (third inlst)))
-            (error 'parse "funciones deben tener solo un cuerpo")))]
+     (let ([inlst (s-exp->list in)])
+       (if (equal? (length inlst) 3)
+           (funS (s-exp->symbol (second inlst)) (parse (third inlst)))
+           (error 'parse "funciones deben tener solo un cuerpo")))]
     [(s-exp-match? `{fun ANY ...} in)
-      (error 'parse "parametros a función deben ser símbolos")]))
+     (error 'parse "parametros a función deben ser símbolos")]))
 
 (define (parse-let in)
   (let ([inlst (s-exp->list in)])
     (if (equal? (length inlst) 3)
         (letS
-          (s-exp->symbol (first (s-exp->list (second inlst))))
-          (parse (second (s-exp->list (second inlst))))
-          (parse (third inlst)))
+         (s-exp->symbol (first (s-exp->list (second inlst))))
+         (parse (second (s-exp->list (second inlst))))
+         (parse (third inlst)))
         (error 'parse "cantidad incorrecta de argumentos para let"))))
 
 (define (parse-app in)
   (let ([inlst (s-exp->list in)])
     (if (equal? (length inlst) 2)
-      (appS (parse (first inlst)) (parse (second inlst)))
-      (error 'parse "cantidad incorrecta de argumentos en aplicación de funciones"))))
-|#
-(define (eval [str : S-Exp]) : Value
-  (interp (desugar (parse str)) empty-env))
+        (appS (parse (first inlst)) (parse (second inlst)))
+        (error 'parse "cantidad incorrecta de argumentos en aplicación de funciones"))))
