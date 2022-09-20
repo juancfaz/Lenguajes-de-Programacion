@@ -10,7 +10,8 @@
   (boolV [value : Boolean])
   (idV [name : Symbol])
   (funV [arg : Symbol]
-		[body : ExprC]))
+		[body : ExprC]
+                [env : Environment]))
 
 (define-type Operator
   (plusO)
@@ -46,7 +47,7 @@
 ;;;;;;;;;;;;;;;
 
 (define (eval [str : S-Exp]) : Value
-  (interp (desugar (parse str)) empty-env))
+  (interp (desugar (parse str))))
 
 ;;;;;;;;;;;;;
 ;; DESUGAR ;;
@@ -104,12 +105,12 @@
 (define (extend-env name value env)
   (cons (binding name value) env))
 
-(define (interp [e : ExprC]) : Value
-   (interp-helper e env))
-
 ;;;;;;;;;;;;
 ;; INTERP ;;
 ;;;;;;;;;;;;
+
+(define (interp [e : ExprC]) : Value
+   (interp-helper e empty-env))
 
 (define (interp-helper [e : ExprC] [env : Environment]) : Value
   (type-case ExprC e
@@ -119,12 +120,12 @@
     [(idC name)
       (lookup-env name env)]
     [(ifC a b c)
-     (let ([v1 (interp a env)])
+     (let ([v1 (interp-helper a env)])
       (cond
          [(not (boolV? v1))
           (error 'ifC "Valor no booleano")]
-         [(boolV-value v1) (interp b env)]
-         [else (interp c env)]))]
+         [(boolV-value v1) (interp-helper b env)]
+         [else (interp-helper c env)]))]
     [(binopC op left right)
      (let ([left (interp-helper left env)])
        (let ([right (interp-helper right env)])
@@ -135,13 +136,12 @@
        (cond
          [(not (funV? v1))
           (bad-app-error v1)]
-         [else (let ([nenv (cons (binding (funV-arg v1) (interp arg env)) env)])
-                 (interp (funV-body v1) nenv))]))]))
+         [else (let ([nenv (cons (binding (funV-arg v1) (interp-helper arg env)) env)])
+                 (interp-helper (funV-body v1) nenv))]))]))
 
 (define (interp-binop [op : Operator]
                       [left : Value]
-                      [right : Value]
-                      [env : Environment]) : Value
+                      [right : Value]) : Value
   (type-case Operator op
     [(plusO)
      (if (numV? left)
