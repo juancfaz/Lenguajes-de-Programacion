@@ -1,0 +1,4 @@
+base                    | ¿Cual es la base?                 |
+altura                  | ¿Cual es la altura?               |
+base por altura         | base * altura                     |
+                        | base por altura / 2               | El area es __.
